@@ -80,6 +80,14 @@ while getopts "p:n:" arg; do
   esac
 done
 
+if [[ $UID != 0 ]]; then
+    echo "Please run this script with sudo:"
+    echo "sudo $0 $*"
+    echo "" 1>&2
+
+    exit 1
+fi
+
 if [ -z "${CERT_PATH+x}" ]; then
   if [ -z "${CERT_NAME}" ]; then
     usage
