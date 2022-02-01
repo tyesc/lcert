@@ -1,12 +1,7 @@
 #!/bin/bash
 
-### Script installs cert.pem to certificate trust store of applications using NSS
-### (e.g. Firefox, Thunderbird, Chromium)
-### Mozilla uses cert8, Chromium and Chrome use cert9
-
-###
-### CA file to install (CUSTOMIZE!)
-###
+### Based on the work of Thomas Leister <thomas@metalhead.club>
+### Original script https://github.com/ThomasLeister/root-certificate-deployment
 
 IFS="."
 
@@ -18,21 +13,33 @@ usage() {
   echo "" 1>&2;
   echo -e "\e[1mSYNOSIS\e[0m" 1>&2;
   echo "" 1>&2;
-  echo -e "\tlcert FILE-NAME CERT-NAME(optional)" 1>&2;
+  echo -e "\tlcert [OPTIONS]... " 1>&2;
   echo "" 1>&2;
   echo -e "\e[1mDESCRIPTION\e[0m" 1>&2;
-  echo -e "\tAutomatic cp and Load new cert.pem to " 1>&2;
-  echo -e "\tcertificate trust store of applications using NSS" 1>&2;
+  echo -e "\tAutomatic cp and Load new cert.pem to certificate trust store of applications using NSS" 1>&2;
+  echo "" 1>&2;
+  echo -e "\t\e[1m-n\e[0m\tset name, with extention, of cert in /etc/ssl/certs/ , \e[1m-n exemple.cert.pem\e[0m" 1>&2;
+  echo "" 1>&2;
+  echo -e "\t\e[1m-p (OPTIONAL)\e[0m\tset the path of the certificate to copy into /etc/ssl/certs/ , \e[1m-p ./cert.pem\e[0m" 1>&2;
   echo "" 1>&2;
   echo -e "\e[1mEXEMPLE\e[0m" 1>&2;
-  echo -e "\tlcert my-cert" 1>&2;
-  echo -e "\t> Do you want load /etc/ssl/certs/my-cert.pem [y/n]? y" 1>&2;
+  echo -e "\tlcert -n my-cert.pem" 1>&2;
+  echo -e "\t> Do you want to load certificate in trust store of applications [y/n]? y" 1>&2;
+  echo -e "\t> This process can take a long moment, please don't abort the task" 1>&2;
+  echo -e "\t> Loaded !" 1>&2;
+  echo "" 1>&2;
+  echo -e "\tlcert -n my-cert.pem -p ./cert.pem" 1>&2;
+  echo -e "\t> Do you want to copy ./cert.pem into /etc/ssl/certs/my-cert.pem [y/n]? y" 1>&2;
+  echo -e "\t> ./cert.pem copied into /etc/ssl/certs/my-cert.pem" 1>&2;
+  echo -e "\t> This process can take a long moment, please don't abort the task" 1>&2;
   echo -e "\t> Loaded !" 1>&2;
 
   exit 1;
 }
 
 load_in_trust_store() {
+  sudo update-ca-certificates
+
   echo "This process can take a long moment, please don't abort the task"
 
   ###
