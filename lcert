@@ -33,44 +33,38 @@ usage() {
 }
 
 load_in_trust_store() {
+  echo "This process can take a long moment, please don't abort the task"
+
   ###
   ### For cert8 (legacy - DBM)
   ###
-  echo "This process can take a long moment, please don't abort the task"
-  #
-  # for certDB in $(find ~/ -name "cert8.db")
-  # do
-  #     echo "cert8";
-  #     CERT_DIR=$(dirname ${certDB});
-  #     certutil -A -n "${CERT_NAME}" -t "TCu,Cu,Tu" -i ${CERT_FILE} -d dbm:${CERT_DIR}
-  # done
-  #
-  #
+
+  for certDB in $(find ~/ -name "cert8.db")
+  do
+      echo "cert8";
+      CERT_DIR=$(dirname ${certDB});
+      certutil -A -n "${CERT_NAME}" -t "TCu,Cu,Tu" -i ${CERT_FILE} -d dbm:${CERT_DIR}
+  done
+
   # ###
   # ### For cert9 (SQL)
   # ###
-  #
-  # for certDB in $(find ~/ -name "cert9.db")
-  # do
-  #     echo "cert9";
-  #     CERT_DIR=$(dirname ${certDB});
-  #     certutil -A -n "${CERT_NAME}" -t "TCu,Cu,Tu" -i ${CERT_FILE} -d sql:${CERT_DIR}
-  # done
+
+  for certDB in $(find ~/ -name "cert9.db")
+  do
+      echo "cert9";
+      CERT_DIR=$(dirname ${certDB});
+      certutil -A -n "${CERT_NAME}" -t "TCu,Cu,Tu" -i ${CERT_FILE} -d sql:${CERT_DIR}
+  done
   echo "Loaded !"
 }
 
-while getopts "lp:n:" arg; do
+while getopts "p:n:" arg; do
   case $arg in
-    l)
-      echo "only load cert"
-      exit 1 || return 1
-      ;;
     p)
-      echo "path to cert ${OPTARG}"
       CERT_PATH=${OPTARG}
       ;;
     n)
-      echo "name of cert ${OPTARG}"
       CERT_NAME=${OPTARG}
       ;;
     *)
@@ -79,13 +73,10 @@ while getopts "lp:n:" arg; do
   esac
 done
 
-if [ -z "${CERT_PATH+x}" ] || [ -z "${CERT_NAME}" ]; then
-  usage
-else
-  read -p "Do you want to copy ${CERT_PATH} into /etc/ssl/certs/${CERT_NAME} [y/n]?" -n 1 -r
-  echo "" 1>&2;
-
-  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+if [ -z "${CERT_PATH+x}" ]; then
+  if [ -z "${CERT_NAME}" ]; then
+    usage
+  else
     read -p "Do you want to load certificate in trust store of applications [y/n]?" -n 1 -r
     echo "" 1>&2;
 
@@ -102,16 +93,27 @@ else
 
     exit 1 || return 1
   fi
+else
+  if [ -z "${CERT_NAME}" ]; then
+    usage
+  else
+    read -p "Do you want to copy ${CERT_PATH} into /etc/ssl/certs/${CERT_NAME} [y/n]?" -n 1 -r
+    echo "" 1>&2;
 
-  # cp ${CERT_PATH} /etc/ssl/certs/
-  echo "${CERT_PATH} copied into /etc/ssl/certs/${CERT_NAME}"
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      [[ "$0" = "${BASH_SOURCE}" ]] && exit 1 || return 1
+    fi
 
-  CERT_FILE="/etc/ssl/certs/${CERT_NAME}"
+    # cp ${CERT_PATH} /etc/ssl/certs/
+    echo "${CERT_PATH} copied into /etc/ssl/certs/${CERT_NAME}"
 
-  read -ra ADDR <<< "${CERT_NAME}"
-  CERT_NAME="${ADDR[0]} CA"
+    CERT_FILE="/etc/ssl/certs/${CERT_NAME}"
 
-  load_in_trust_store
+    read -ra ADDR <<< "${CERT_NAME}"
+    CERT_NAME="${ADDR[0]} CA"
 
-  exit 1 || return 1
+    load_in_trust_store
+
+    exit 1 || return 1
+  fi
 fi
