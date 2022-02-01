@@ -1,8 +1,15 @@
+<div align="center">
+
 # lcert
-Automatic cp and Load new cert.pem to certificate trust store of applications using NSS
+
+<br />
+<p>Automatic cp and Load new cert.pem to certificate trust store of applications using NSS</p>
+
+Based on the [work](https://github.com/ThomasLeister/root-certificate-deployment) of Thomas Leister <thomas@metalhead.club>
+
+</div>
 
 ## Usage
-
 ```text
 NAME
 
@@ -30,11 +37,9 @@ EXEMPLE
 	> ./cert.pem copied into /etc/ssl/certs/my-cert.pem
 	> This process can take a long moment, please don't abort the task
 	> Loaded !
-
 ```
 
 ## Requirement
-
 ```bash
 $ apt install libnss3-tools
 ```
