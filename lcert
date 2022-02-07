@@ -49,8 +49,8 @@ load_in_trust_store() {
   for certDB in $(find ~/ -name "cert8.db")
   do
       echo "cert8";
-      CERT_DIR=$(dirname ${certDB});
-      certutil -A -n "${CERT_NAME}" -t "TCu,Cu,Tu" -i ${CERT_FILE} -d dbm:${CERT_DIR}
+      cert_dir=$(dirname ${certDB});
+      certutil -A -n "${cert_name}" -t "TCu,Cu,Tu" -i ${cert_file} -d dbm:${cert_dir}
   done
 
   ###
@@ -60,8 +60,8 @@ load_in_trust_store() {
   for certDB in $(find ~/ -name "cert9.db")
   do
       echo "cert9";
-      CERT_DIR=$(dirname ${certDB});
-      certutil -A -n "${CERT_NAME}" -t "TCu,Cu,Tu" -i ${CERT_FILE} -d sql:${CERT_DIR}
+      cert_dir=$(dirname ${certDB});
+      certutil -A -n "${cert_name}" -t "TCu,Cu,Tu" -i ${cert_file} -d sql:${cert_dir}
   done
   echo "Loaded !"
 }
@@ -69,10 +69,10 @@ load_in_trust_store() {
 while getopts "p:n:" arg; do
   case $arg in
     p)
-      CERT_PATH=${OPTARG}
+      cert_path=${OPTARG}
       ;;
     n)
-      CERT_NAME=${OPTARG}
+      cert_name=${OPTARG}
       ;;
     *)
       usage
@@ -88,8 +88,8 @@ if [[ $UID != 0 ]]; then
     exit 1
 fi
 
-if [ -z "${CERT_PATH+x}" ]; then
-  if [ -z "${CERT_NAME}" ]; then
+if [ -z "${cert_path+x}" ]; then
+  if [ -z "${cert_name}" ]; then
     usage
   else
     read -p "Do you want to load certificate in trust store of applications [y/n]?" -n 1 -r
@@ -99,33 +99,33 @@ if [ -z "${CERT_PATH+x}" ]; then
       [[ "$0" = "${BASH_SOURCE}" ]] && exit 1 || return 1
     fi
 
-    CERT_FILE="/etc/ssl/certs/${CERT_NAME}"
+    cert_file="/etc/ssl/certs/${cert_name}"
 
-    read -ra ADDR <<< "${CERT_NAME}"
-    CERT_NAME="${ADDR[0]} CA"
+    read -ra ADDR <<< "${cert_name}"
+    cert_name="${ADDR[0]} CA"
 
     load_in_trust_store
 
     exit 1 || return 1
   fi
 else
-  if [ -z "${CERT_NAME}" ]; then
+  if [ -z "${cert_name}" ]; then
     usage
   else
-    read -p "Do you want to copy ${CERT_PATH} into /etc/ssl/certs/${CERT_NAME} [y/n]?" -n 1 -r
+    read -p "Do you want to copy ${cert_path} into /etc/ssl/certs/${cert_name} [y/n]?" -n 1 -r
     echo "" 1>&2;
 
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
       [[ "$0" = "${BASH_SOURCE}" ]] && exit 1 || return 1
     fi
 
-    sudo cp ${CERT_PATH} /etc/ssl/certs/
-    echo "${CERT_PATH} copied into /etc/ssl/certs/${CERT_NAME}"
+    sudo cp ${cert_path} /etc/ssl/certs/
+    echo "${cert_path} copied into /etc/ssl/certs/${cert_name}"
 
-    CERT_FILE="/etc/ssl/certs/${CERT_NAME}"
+    cert_file="/etc/ssl/certs/${cert_name}"
 
-    read -ra ADDR <<< "${CERT_NAME}"
-    CERT_NAME="${ADDR[0]} CA"
+    read -ra ADDR <<< "${cert_name}"
+    cert_name="${ADDR[0]} CA"
 
     load_in_trust_store
 
