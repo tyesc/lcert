@@ -4,6 +4,7 @@
 ### Original script https://github.com/ThomasLeister/root-certificate-deployment
 
 IFS="."
+CTRLC_COUNT=0
 
 usage() {
   echo "" 1>&2;
@@ -46,25 +47,39 @@ load_in_trust_store() {
   ### For cert8 (legacy - DBM)
   ###
 
-  for certDB in $(find ~/ -name "cert8.db")
-  do
-      echo "cert8";
-      cert_dir=$(dirname ${certDB});
-      certutil -A -n "${cert_name}" -t "TCu,Cu,Tu" -i ${cert_file} -d dbm:${cert_dir}
+  for certDB in $(find ~/ -name "cert8.db"); do
+    echo "cert8";
+    cert_dir=$(dirname ${certDB});
+    certutil -A -n "${cert_name}" -t "TCu,Cu,Tu" -i ${cert_file} -d dbm:${cert_dir}
   done
 
   ###
   ### For cert9 (SQL)
   ###
 
-  for certDB in $(find ~/ -name "cert9.db")
-  do
-      echo "cert9";
-      cert_dir=$(dirname ${certDB});
-      certutil -A -n "${cert_name}" -t "TCu,Cu,Tu" -i ${cert_file} -d sql:${cert_dir}
+  for certDB in $(find ~/ -name "cert9.db"); do
+    echo "cert9";
+    cert_dir=$(dirname ${certDB});
+    certutil -A -n "${cert_name}" -t "TCu,Cu,Tu" -i ${cert_file} -d sql:${cert_dir}
   done
+
   echo "Loaded !"
+  exit 0
 }
+
+confirm_ctrlc() {
+    let CTRLC_COUNT++
+    echo ""
+
+    if [[ $CTRLC_COUNT == 1 ]]; then
+        echo "Are you sure you want to Interrupt this task ? [Yes(ctrl+c)/No(do nothing)]"
+    else
+        echo "Ok, I quit."
+        exit 1;
+    fi
+}
+
+trap confirm_ctrlc INT
 
 while getopts "p:n:" arg; do
   case $arg in
@@ -83,7 +98,6 @@ done
 if [[ $UID != 0 ]]; then
     echo "Please run this script with sudo:"
     echo "sudo $0 $*"
-    echo "" 1>&2
 
     exit 1
 fi
@@ -105,8 +119,6 @@ if [ -z "${cert_path+x}" ]; then
     cert_name="${ADDR[0]} CA"
 
     load_in_trust_store
-
-    exit 1 || return 1
   fi
 else
   if [ -z "${cert_name}" ]; then
@@ -128,7 +140,5 @@ else
     cert_name="${ADDR[0]} CA"
 
     load_in_trust_store
-
-    exit 1 || return 1
   fi
 fi
